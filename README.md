@@ -2,7 +2,7 @@
 
 A minimalist, zero-dependency browser tool for building animated slideshows from images and exporting them as video files. No server, no install, no account — just open and use.
 
-**[→ Live Demo]([https://sandro.ieva](https://slideshow-generator.sandroieva.com)**
+**[→ Live Demo]([https://slideshow-generator.sandroieva.com])**
 
 ---
 
