@@ -977,24 +977,32 @@ document.addEventListener('click',()=>closeAllDD());
 /* ── file loading ── */
 function loadFiles(files){
   const arr=Array.from(files).filter(f=>f.type.startsWith('image/'));
-  if(!arr.length)return;let n=0;
+  if(!arr.length)return;
+  let n=0;
+  const total=arr.length;
+  // Show loading state
+  const dropEl=document.getElementById('drop');
+  const wasHidden=dropEl.style.display==='none';
+  showStat('Loading images…');
+  setStat(0,'Loading 0 / '+total+'…');
+
   arr.forEach(f=>{
     const r=new FileReader();
     r.onload=ev=>{
       const img=new Image();
-      // Use decode() for Safari — more reliable than onload for canvas drawing
       img.src=ev.target.result;
       (img.decode ? img.decode() : new Promise(res=>{img.onload=res;img.onerror=res;}))
         .then(()=>{
           img._n=f.name;
           imgs.push(img);
           n++;
-          if(n===arr.length){cache.clear();ecache.clear();updateAll();}
+          setStat(n/total*100,'Loading '+n+' / '+total+'…');
+          if(n===total){cache.clear();ecache.clear();hideStat();updateAll();}
         })
         .catch(()=>{
-          // fallback: still try to use the image
           img._n=f.name;imgs.push(img);n++;
-          if(n===arr.length){cache.clear();ecache.clear();updateAll();}
+          setStat(n/total*100,'Loading '+n+' / '+total+'…');
+          if(n===total){cache.clear();ecache.clear();hideStat();updateAll();}
         });
     };
     r.readAsDataURL(f);
