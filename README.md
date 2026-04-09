@@ -76,7 +76,7 @@ A minimalist, zero-dependency browser tool for building animated slideshows from
 ## Getting Started
 
 ### Use online
-Visit the [live demo](https://your-project.vercel.app) — no installation needed.
+Visit the [live demo](https://slideshow-generator.sandroieva.com) — no installation needed.
 
 ### Run locally
 Just open `index.html` in Chrome or Edge:
