@@ -716,7 +716,12 @@ function buildMP4(chunks,encConfig,w,h,fps){
 
 /* ── download / share helper ── */
 async function download(blob,filename){
-  // On mobile: try Web Share API first (enables "Save to Photos")
+  // Detect iOS Safari
+  const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||
+    (navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  const isSafari=/^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
+  // 1) Try Web Share API (best path — enables "Save to Photos" on iOS)
   if(navigator.share&&navigator.canShare){
     try{
       const file=new File([blob],filename,{type:blob.type});
@@ -725,11 +730,25 @@ async function download(blob,filename){
         return;
       }
     }catch(e){
-      // User cancelled share or share failed — fall through to download
       if(e.name==='AbortError')return;
+      // Share failed — fall through
     }
   }
-  // Fallback: classic download link
+
+  // 2) iOS Safari fallback: open video in new tab so user can long-press → Save Video
+  if(isIOS&&isSafari){
+    const url=URL.createObjectURL(blob);
+    const w=window.open('','_blank');
+    if(w){
+      w.document.write(`<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>Slideshow</title><style>*{margin:0;padding:0;background:#000}body{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;font-family:-apple-system,sans-serif}video{max-width:100%;max-height:70vh;border-radius:8px}p{color:rgba(255,255,255,.5);font-size:13px;margin-top:20px;text-align:center;padding:0 24px;line-height:1.6}</style></head><body><video src="${url}" controls playsinline autoplay></video><p>Long-press the video and tap <b style="color:#fff">Save Video</b> to save it to your Photos.</p></body></html>`);
+      w.document.close();
+    }else{
+      window.location.href=url;
+    }
+    return;
+  }
+
+  // 3) Standard download link (Chrome, Firefox, desktop)
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
   a.href=url;a.download=filename;
@@ -1177,6 +1196,20 @@ function audioBufferToWav(buf){
   }
   return new Blob([out],{type:'audio/wav'});
 }
+
+/* ── Auto-select MP4 on Safari/iOS (WebM won't save to Photos) ── */
+(function(){
+  const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||
+    (navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  const isSafari=/^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+  if((isIOS||isSafari)&&safariMP4Supported()){
+    expFmt='mp4';
+    document.querySelectorAll('.fo').forEach(o=>{
+      o.classList.toggle('sel',o.dataset.f==='mp4');
+    });
+    updateFmtNote();
+  }
+})();
 </script>
 </body>
 </html>
